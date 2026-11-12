@@ -20,9 +20,9 @@ Built Nov 11, 2026. One build, two hackathons.
 - README and MIT license for the repo
 - Local git repo with one commit, **not pushed anywhere**
 
-## What needs Loki (nothing is public yet)
+## What needs Loki
 
-**On hold (Nov 12):** Loki said yes to all three, then asked to restyle the decoder to match Clarity Prep's other tools and "don't publish this". Nothing has been pushed or uploaded. The restyle is done (Schibsted Grotesk, ink, lava orange, paper, the same stage and card as the GPA calculator and essay grader). Wait for a fresh OK on the new look before 1-3. Note: Chrome's GitHub sign-in is the `Loki-Pam` account, not `LokeshPampatti`; confirm which account should own the repo.
+**Published Nov 12 (Loki: "Looks right, publish"):** repo https://github.com/LokeshPampatti/aid-letter-decoder (public), live demo https://lokeshpampatti.github.io/aid-letter-decoder/ (tested: 3 samples, PDF, AI, Spanish), video https://youtu.be/OFkOC5Jwi_M (Unlisted, Lokesh Pampatti channel). Items 1-3 are done; only Devpost (4) is left.
 
 1. **OK to make a public GitHub repo** `LokeshPampatti/aid-letter-decoder` and push this folder. SLAY requires a source repo.
 2. **OK to host the demo** so judges can click it (GitHub Pages from that repo, or a Vercel Hobby project). AccessED wants judging links live through Nov 22.
@@ -107,11 +107,11 @@ html, css, javascript, pdf.js, transformers.js, all-minilm-l6-v2, web-speech-api
 
 Everything in this repo was written on Nov 11, 2026, inside the AccessED event window (Oct 17 to Nov 20). Pre-existing work used: pdf.js and transformers.js (open source, Apache 2.0) and the all-MiniLM-L6-v2 model. AI assistance: built with help from Claude (Anthropic) as a coding assistant. All sample letters, schools and students are made up.
 
-### Links to fill in after Loki's OK
+### Links
 
-- Try it: `https://lokeshpampatti.github.io/aid-letter-decoder/` (after the repo push and Pages are on)
-- Source: `https://github.com/LokeshPampatti/aid-letter-decoder`
-- Video: YouTube Unlisted link
+- Try it: https://lokeshpampatti.github.io/aid-letter-decoder/
+- Source: https://github.com/LokeshPampatti/aid-letter-decoder
+- Video: https://youtu.be/OFkOC5Jwi_M
 
 ### SLAY HACKS extra field: "AI implementation"
 

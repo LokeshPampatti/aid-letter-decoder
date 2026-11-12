@@ -6,7 +6,9 @@ It runs entirely in the browser. No account, no server, no upload. The letter ne
 
 ## Try it
 
-Open `index.html` in any modern browser, or serve the folder:
+Live: https://lokeshpampatti.github.io/aid-letter-decoder/ · Demo video: https://youtu.be/OFkOC5Jwi_M
+
+Or run it locally: open `index.html` in any modern browser, or serve the folder:
 
 ```bash
 python3 -m http.server 5178

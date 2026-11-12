@@ -50,6 +50,7 @@
     colLine: 'Line in your letter', colAmount: 'Amount', colType: 'What it is',
     cat: { grant: 'Gift (grant or scholarship)', loan: 'Loan', work: 'Work-study', cost: 'Cost', summary: 'School\'s own total', unknown: 'Not sure', ignore: 'Ignore this line' },
     checkTag: 'check this',
+    checkTip: 'Vague name. Ask the school if this is a grant you keep.',
     missingTitle: 'Costs the letter left out',
     missingHelp: 'Look up the school\'s full "cost of attendance" on its website. Type any costs missing here (books, travel, personal costs).',
     missingLabel: 'Missing costs for one year',
@@ -75,6 +76,7 @@
       vagueAward: 'Some lines just say "award". That usually means a gift, but schools use the word loosely. Ask the school to confirm none of it is a loan.',
       workStudy: 'Work-study is not taken off your bill. You get it as a paycheck from a campus job, if you find one and work the hours.',
       renewal: 'Some money has conditions. Read these lines closely:',
+      overBorrow: function (f) { return 'The loans offered (' + $(f.loans) + ') are more than what is left to pay after gifts (' + $(f.left) + '). Taking all of them means borrowing about ' + $(f.extra) + ' more than you need. You can accept less than the full loan amount.'; },
       unknown: 'We could not sort every line. Look at the lines marked "Not sure" below.'
     },
     questions: [
@@ -132,7 +134,8 @@
     linesHelp: '¿Mal clasificada? Cámbiela aquí y los números se actualizan.',
     colLine: 'Línea de su carta', colAmount: 'Cantidad', colType: 'Qué es',
     cat: { grant: 'Regalo (beca o subvención)', loan: 'Préstamo', work: 'Trabajo-estudio', cost: 'Costo', summary: 'Total de la universidad', unknown: 'No estamos seguros', ignore: 'Ignorar esta línea' },
-    checkTag: 'revisar',
+    checkTag: 'verifique',
+    checkTip: 'Nombre poco claro. Pregunte a la universidad si es una beca que no se devuelve.',
     missingTitle: 'Costos que la carta no incluye',
     missingHelp: 'Busque el "cost of attendance" (costo total) en el sitio web de la universidad. Escriba aquí los costos que faltan (libros, transporte, gastos personales).',
     missingLabel: 'Costos que faltan para un año',
@@ -158,6 +161,7 @@
       vagueAward: 'Algunas líneas solo dicen "award". Normalmente es un regalo, pero las universidades usan la palabra a la ligera. Pida que confirmen que nada de eso es un préstamo.',
       workStudy: 'El trabajo-estudio no se descuenta de su factura. Lo recibe como sueldo de un empleo en el campus, si consigue uno y trabaja las horas.',
       renewal: 'Parte del dinero tiene condiciones. Lea bien estas líneas:',
+      overBorrow: function (f) { return 'Los préstamos ofrecidos (' + $(f.loans) + ') son más de lo que queda por pagar después de los regalos (' + $(f.left) + '). Si los acepta todos, pediría prestado unos ' + $(f.extra) + ' más de lo necesario. Puede aceptar menos del monto completo.'; },
       unknown: 'No pudimos clasificar todas las líneas. Revise abajo las marcadas "No estamos seguros".'
     },
     questions: [

@@ -156,14 +156,14 @@
   function list(id, cat, empty) {
     var rows = state.items.filter(function (i) { return i.cat === cat; });
     el(id).innerHTML = rows.length ? rows.map(function (i) {
-      return '<li><span>' + esc(i.label) + (i.check ? ' <span class="tag">' + esc(T.checkTag) + '</span>' : '') + '</span><b>' + $(i.amount) + '</b></li>';
+      return '<li><span>' + esc(i.label) + (i.check ? ' <span class="tag" title="' + esc(T.checkTip) + '">' + esc(T.checkTag) + '</span>' : '') + '</span><b>' + $(i.amount) + '</b></li>';
     }).join('') : '<li class="empty">' + esc(empty) + '</li>';
   }
 
   function renderLines() {
     var cats = ['grant', 'loan', 'work', 'cost', 'summary', 'unknown', 'ignore'];
     el('lines').innerHTML = state.items.map(function (i) {
-      var tags = (i.check && i.cat !== 'unknown' ? ' <span class="tag">' + esc(T.checkTag) + '</span>' : '') +
+      var tags = (i.check && i.cat !== 'unknown' ? ' <span class="tag" title="' + esc(T.checkTip) + '">' + esc(T.checkTag) + '</span>' : '') +
         (i.ai ? ' <span class="tag ai">' + esc(T.aiTag) + ' ' + Math.round(i.ai * 100) + '%</span>' : '');
       return '<tr class="t-' + i.cat + '"><td>' + esc(i.label) + tags + '</td><td class="num">' + $(i.amount) + '</td><td>' +
         '<select data-id="' + i.id + '" aria-label="' + esc(T.colType + ': ' + i.label) + '">' +

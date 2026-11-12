@@ -12,6 +12,7 @@
     // Summary lines the school adds up for you. We keep them only to compare.
     { cat: 'summary', kind: 'claimedNet', re: /\b(net (cost|price)|your (net )?cost|remaining balance|balance due|amount due|you owe|estimated (cost|bill) to you|out[- ]of[- ]pocket)\b/i },
     { cat: 'summary', kind: 'total', re: /\b(total|sum)\b.*\b(aid|award|offer|package|financial|cost|costs|attendance|expenses|direct|indirect)\b|\b(aid|award)s? total\b/i },
+    { cat: 'summary', kind: 'total', re: /\b(cost of attendance|attendance cost|coa|estimated (total )?cost|total cost|student budget|cost budget)\b/i },
     { cat: 'info', kind: 'sai', re: /\b(student aid index|sai|expected family contribution|efc)\b/i },
 
     // Work-study before loans and grants.
@@ -44,6 +45,10 @@
 
   var MONEY = /\$\s?\d[\d,]*(?:\.\d{1,2})?|\b\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?\b/g;
 
+  // Bare numbers ("Subsidized 3500") count only on lines that name a kind of aid or cost.
+  var PLAIN = /(?<![\d\-\/(.:])\d{3,7}(?:\.\d{1,2})?(?![\d\-\/)%])/g;
+  var YEARISH = /\b(19|20)\d{2}\s*[-–\/]\s*\d{2,4}\b|\b(year|academic|fall|spring|semester|term|class of)\b/i;
+
   function toNumber(s) { return Math.round(parseFloat(s.replace(/[$,\s]/g, '')) || 0); }
 
   // A line like "Pell Grant  $3,698  $3,697  $7,395" has fall, spring and a total.
@@ -58,7 +63,8 @@
   }
 
   function labelOf(line) {
-    return line.replace(MONEY, ' ').replace(/[.…_]{2,}/g, ' ').replace(/\s{2,}/g, ' ').replace(/[:\-\s]+$/, '').trim();
+    return line.replace(MONEY, ' ').replace(/[.…_]{2,}/g, ' ').replace(/\s{2,}/g, ' ').replace(/[:\-\s]+$/, '').trim()
+      .replace(/[\s,:(]*\b(up to|maximum of|maximum|max\.?|not to exceed|approx(imately|\.)?|about|est\.?)\s*$/i, '').trim();
   }
 
   function classify(label) {
@@ -92,6 +98,14 @@
       var found = line.match(MONEY) || [];
       var nums = found.map(toNumber);
       var label = labelOf(line);
+      if (!nums.length) {
+        var plain = (line.match(PLAIN) || []).filter(function (n) { return !(YEARISH.test(line) && /^(19|20)\d{2}$/.test(n)); });
+        var plainLabel = line.replace(PLAIN, ' ').replace(/\s{2,}/g, ' ').replace(/[:\-\s]+$/, '').trim();
+        if (plain.length && classify(plainLabel).cat !== 'unknown') {
+          nums = plain.map(toNumber);
+          label = labelOf(plainLabel);
+        }
+      }
 
       if (!nums.length || !/[a-z]/i.test(label)) {
         prose.push(line);
@@ -100,6 +114,7 @@
       flushProse();
       var c = classify(label);
       if (c.kind === 'sai') return; // not money on the bill
+      if (/\b(renew|renewable|gpa|grade point|maintain)\b/i.test(label)) notes.renewal.push(label);
       items.push({
         id: 'l' + idx,
         line: line,
@@ -139,10 +154,11 @@
     var direct = sum(items, 'cost', 'direct');
     var indirect = sum(items, 'cost', 'indirect');
     var listedCost = direct + indirect;
-    var claimedTotalCost = items.filter(function (i) { return i.cat === 'summary' && i.kind === 'total' && /\b(cost|attendance|expenses)\b/i.test(i.label); })
+    var claimedTotalCost = items.filter(function (i) { return i.cat === 'summary' && i.kind === 'total' && /\b(cost|costs|attendance|expenses|coa|budget)\b/i.test(i.label); })
       .reduce(function (m, i) { return Math.max(m, i.amount); }, 0);
-    // If the letter only gave a total cost line, use it.
-    var cost = (listedCost || claimedTotalCost) + extra;
+    // Use the itemized costs, or the letter's own cost of attendance if that is bigger
+    // (letters often itemize only the billed costs and give the full total separately).
+    var cost = Math.max(listedCost, claimedTotalCost) + extra;
     var grants = sum(items, 'grant');
     var loans = sum(items, 'loan');
     var work = sum(items, 'work');
@@ -167,6 +183,7 @@
     if (items.some(function (i) { return i.cat === 'loan' && (i.kind === 'private' || i.kind === 'institutional'); })) flags.push({ key: 'privateLoan' });
     if (items.some(function (i) { return i.kind === 'federalUnclear'; })) flags.push({ key: 'federalUnclear' });
     if (items.some(function (i) { return i.kind === 'vagueAward'; })) flags.push({ key: 'vagueAward' });
+    if (cost && loans > net + 50) flags.push({ key: 'overBorrow', loans: loans, left: net, extra: loans - net });
     if (work) flags.push({ key: 'workStudy' });
     if (opts.notes && opts.notes.pushesPrivate) flags.push({ key: 'pushesPrivate' });
     if (opts.notes && opts.notes.renewal.length) flags.push({ key: 'renewal', lines: opts.notes.renewal });

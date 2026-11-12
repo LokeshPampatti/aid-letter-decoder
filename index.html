@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aid Letter Decoder</title>
+  <meta name="description" content="Paste a college financial aid letter and see what is a gift, what is a loan, and the real price. Runs on your device.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#letter">Skip to the letter box</a>
+  <header class="top">
+    <div class="wrap top-row">
+      <p class="brand"><span class="mark" aria-hidden="true">$</span> <span data-t="title">Aid Letter Decoder</span></p>
+      <div class="tools" role="group" aria-label="Language">
+        <button type="button" class="chip" data-lang="en" aria-pressed="true">English</button>
+        <button type="button" class="chip" data-lang="es" aria-pressed="false" lang="es">Español</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <section class="hero">
+      <h1 data-t="tagline">Paste a college financial aid letter. See what is a gift, what is a loan, and what the school really costs.</h1>
+      <p class="privacy"><span aria-hidden="true">●</span> <span data-t="privacy">Your letter never leaves this device. Nothing is uploaded or saved.</span></p>
+    </section>
+
+    <section class="card input" aria-labelledby="step1">
+      <h2 id="step1" data-t="step1">1. Add your letter</h2>
+      <label for="letter" data-t="pasteLabel">Paste the text of your aid letter</label>
+      <textarea id="letter" rows="10" spellcheck="false"></textarea>
+
+      <div class="row">
+        <span class="or" data-t="or">or</span>
+        <label class="file">
+          <input type="file" id="file" accept=".pdf,.txt,application/pdf,text/plain">
+          <span data-t="uploadLabel">Open a PDF or text file</span>
+        </label>
+      </div>
+      <p class="hint" id="fileHint" data-t="uploadHint">PDF files are read on your device.</p>
+
+      <div class="samples">
+        <span data-t="samplesLabel">No letter handy? Try a sample:</span>
+        <button type="button" class="chip" data-sample="northgate">Northgate University</button>
+        <button type="button" class="chip" data-sample="riverbend">State College of Riverbend</button>
+        <button type="button" class="chip" data-sample="lakeshore">Lakeshore Institute</button>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="primary" id="decode" data-t="decode">Decode my letter</button>
+        <button type="button" class="ghost" id="clear" data-t="clear">Start over</button>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="results" class="results" hidden aria-labelledby="resultsHeading">
+      <div class="results-head">
+        <h2 id="resultsHeading" tabindex="-1" data-t="resultsHeading">2. What your letter really says</h2>
+        <button type="button" class="ghost" id="speak" data-t="readAloud">Read results aloud</button>
+      </div>
+
+      <div class="price card">
+        <p class="price-label" data-t="realPrice">Real price for one year</p>
+        <p class="price-num" id="realPrice">$0</p>
+        <p class="price-sub" id="realPriceSub"></p>
+      </div>
+
+      <div class="card">
+        <h3 id="barLabel" data-t="barLabel">How the full cost gets covered</h3>
+        <div class="bar" id="bar" role="img" aria-labelledby="barLabel"></div>
+        <dl class="totals" id="totals"></dl>
+      </div>
+
+      <div class="card warn" id="watch" hidden>
+        <h3 data-t="watchTitle">Watch out for</h3>
+        <ul id="flags"></ul>
+      </div>
+
+      <div class="card" id="missing" hidden>
+        <h3 data-t="missingTitle">Costs the letter left out</h3>
+        <p data-t="missingHelp"></p>
+        <label for="extraCost" data-t="missingLabel">Missing costs for one year</label>
+        <div class="money-input"><span aria-hidden="true">$</span><input id="extraCost" type="number" inputmode="numeric" min="0" step="100" placeholder="0"></div>
+      </div>
+
+      <div class="groups">
+        <div class="card group g-grant"><h3 data-t="grantsTitle">Gifts</h3><ul id="listGrant"></ul></div>
+        <div class="card group g-loan"><h3 data-t="loansTitle">Loans</h3><ul id="listLoan"></ul><div id="payback"></div></div>
+        <div class="card group g-work"><h3 data-t="workTitle">Work-study</h3><ul id="listWork"></ul></div>
+      </div>
+
+      <div class="card" id="aiBox" hidden>
+        <h3 data-t="aiTitle">Not sure about some lines?</h3>
+        <p data-t="aiHelp"></p>
+        <button type="button" class="ghost" id="aiRun" data-t="aiButton">Ask the on-device AI</button>
+        <p class="status" id="aiStatus" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="card">
+        <h3 data-t="linesTitle">Every line we found</h3>
+        <p class="hint" data-t="linesHelp">Wrong sort? Change it here and the numbers update.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col" data-t="colLine">Line</th><th scope="col" class="num" data-t="colAmount">Amount</th><th scope="col" data-t="colType">What it is</th></tr></thead>
+            <tbody id="lines"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 data-t="questionsTitle">Questions to ask the aid office</h3>
+        <ol id="questions"></ol>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap foot"><p data-t="footer"></p></footer>
+
+  <script src="vendor/pdf.min.js"></script>
+  <script src="decoder.js"></script>
+  <script src="samples.js"></script>
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

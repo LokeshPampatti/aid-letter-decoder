@@ -20,7 +20,7 @@
   function applyLang(l) {
     lang = l; T = window.I18N[l];
     document.documentElement.lang = l;
-    document.title = T.title;
+    document.title = T.title.replace(/\.$/, '') + ' | Clarity Prep';
     document.querySelectorAll('[data-t]').forEach(function (n) {
       var v = T[n.getAttribute('data-t')];
       if (typeof v === 'string') n.textContent = v;
@@ -292,4 +292,10 @@
   var saved = null;
   try { saved = localStorage.getItem('ald-lang'); } catch (e) {}
   applyLang(saved === 'es' ? 'es' : 'en');
+
+  // Hairline under the header once the page scrolls, like joinclarityprep.com.
+  var hdr = el('hdr');
+  function edge() { hdr.classList.toggle('c-edge', window.scrollY > 4); }
+  window.addEventListener('scroll', edge, { passive: true });
+  edge();
 })();

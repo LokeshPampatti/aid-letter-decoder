@@ -3,118 +3,144 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Aid Letter Decoder</title>
+  <title>Aid Letter Decoder | Clarity Prep</title>
   <meta name="description" content="Paste a college financial aid letter and see what is a gift, what is a loan, and the real price. Runs on your device.">
+  <meta name="color-scheme" content="light">
+  <link rel="preload" href="vendor/fonts/schibsted-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <a class="skip" href="#letter">Skip to the letter box</a>
-  <header class="top">
-    <div class="wrap top-row">
-      <p class="brand"><span class="mark" aria-hidden="true">$</span> <span data-t="title">Aid Letter Decoder</span></p>
-      <div class="tools" role="group" aria-label="Language">
-        <button type="button" class="chip" data-lang="en" aria-pressed="true">English</button>
-        <button type="button" class="chip" data-lang="es" aria-pressed="false" lang="es">Español</button>
+<body class="c">
+  <a class="c-skip" href="#letter" data-t="skip">Skip to the letter box</a>
+  <header class="c-hdr" id="hdr">
+    <div class="c-wrap c-hdr-in">
+      <a class="c-logo" href="https://joinclarityprep.com" aria-label="Clarity Prep home">
+        <svg viewBox="-50 -50 100 100" aria-hidden="true"><circle r="36" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-dasharray="179.69909978533616 226.1946710584651" transform="rotate(37)"></circle><circle r="7" fill="currentColor"></circle></svg>
+        <span>Clarity Prep</span>
+      </a>
+      <div class="d-seg" role="group" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true">English</button>
+        <button type="button" data-lang="es" aria-pressed="false" lang="es">Español</button>
       </div>
     </div>
   </header>
 
-  <main id="main" class="wrap">
-    <section class="hero">
-      <h1 data-t="tagline">Paste a college financial aid letter. See what is a gift, what is a loan, and what the school really costs.</h1>
-      <p class="privacy"><span aria-hidden="true">●</span> <span data-t="privacy">Your letter never leaves this device. Nothing is uploaded or saved.</span></p>
+  <main id="main">
+    <section class="c-page-hero c-wrap">
+      <p class="c-kicker" data-t="kicker">Financial aid tool</p>
+      <h1 data-t="title">Aid letter decoder.</h1>
+      <p class="c-lead" data-t="tagline">Paste a college financial aid letter. See what is a gift, what is a loan, and what the school really costs.</p>
+      <p class="c-fine"><span class="d-dot" aria-hidden="true"></span><span data-t="privacy">Your letter never leaves this device. Nothing is uploaded or saved.</span></p>
     </section>
 
-    <section class="card input" aria-labelledby="step1">
-      <h2 id="step1" data-t="step1">1. Add your letter</h2>
-      <label for="letter" data-t="pasteLabel">Paste the text of your aid letter</label>
-      <textarea id="letter" rows="10" spellcheck="false"></textarea>
+    <div class="c-wrap d-wrap">
+      <div class="d-stage">
+        <section class="d-card d-input" aria-labelledby="step1">
+          <h2 id="step1" data-t="step1">Add your letter</h2>
+          <div class="d-field">
+            <label for="letter" data-t="pasteLabel">Paste the text of your aid letter</label>
+            <textarea id="letter" rows="10" spellcheck="false"></textarea>
+          </div>
 
-      <div class="row">
-        <span class="or" data-t="or">or</span>
-        <label class="file">
-          <input type="file" id="file" accept=".pdf,.txt,application/pdf,text/plain">
-          <span data-t="uploadLabel">Open a PDF or text file</span>
-        </label>
-      </div>
-      <p class="hint" id="fileHint" data-t="uploadHint">PDF files are read on your device.</p>
+          <div class="d-row">
+            <span class="d-or" data-t="or">or</span>
+            <label class="d-file c-btn c-btn-sm c-btn-line">
+              <input type="file" id="file" accept=".pdf,.txt,application/pdf,text/plain">
+              <span data-t="uploadLabel">Open a PDF or text file</span>
+            </label>
+            <span class="d-hint" id="fileHint" data-t="uploadHint">PDF files are read on your device.</span>
+          </div>
 
-      <div class="samples">
-        <span data-t="samplesLabel">No letter handy? Try a sample:</span>
-        <button type="button" class="chip" data-sample="northgate">Northgate University</button>
-        <button type="button" class="chip" data-sample="riverbend">State College of Riverbend</button>
-        <button type="button" class="chip" data-sample="lakeshore">Lakeshore Institute</button>
-      </div>
+          <div class="d-samples">
+            <span data-t="samplesLabel">No letter handy? Try a sample:</span>
+            <button type="button" class="d-chip" data-sample="northgate">Northgate University</button>
+            <button type="button" class="d-chip" data-sample="riverbend">State College of Riverbend</button>
+            <button type="button" class="d-chip" data-sample="lakeshore">Lakeshore Institute</button>
+          </div>
 
-      <div class="actions">
-        <button type="button" class="primary" id="decode" data-t="decode">Decode my letter</button>
-        <button type="button" class="ghost" id="clear" data-t="clear">Start over</button>
-      </div>
-      <p class="status" id="status" role="status" aria-live="polite"></p>
-    </section>
+          <div class="d-actions">
+            <button type="button" class="c-btn c-btn-lava" id="decode" data-t="decode">Decode my letter</button>
+            <button type="button" class="d-textbtn" id="clear" data-t="clear">Start over</button>
+          </div>
+          <p class="d-status" id="status" role="status" aria-live="polite"></p>
+        </section>
 
-    <section id="results" class="results" hidden aria-labelledby="resultsHeading">
-      <div class="results-head">
-        <h2 id="resultsHeading" tabindex="-1" data-t="resultsHeading">2. What your letter really says</h2>
-        <button type="button" class="ghost" id="speak" data-t="readAloud">Read results aloud</button>
-      </div>
+        <section id="results" class="d-card d-results" hidden aria-labelledby="resultsHeading">
+          <div class="d-head">
+            <h2 id="resultsHeading" tabindex="-1" data-t="resultsHeading">What your letter really says</h2>
+            <button type="button" class="c-btn c-btn-sm c-btn-line" id="speak" data-t="readAloud">Read results aloud</button>
+          </div>
 
-      <div class="price card">
-        <p class="price-label" data-t="realPrice">Real price for one year</p>
-        <p class="price-num" id="realPrice">$0</p>
-        <p class="price-sub" id="realPriceSub"></p>
-      </div>
+          <div class="d-price">
+            <p class="d-price-label" data-t="realPrice">Real price for one year</p>
+            <p class="d-price-num" id="realPrice">$0</p>
+            <p class="d-price-sub" id="realPriceSub"></p>
+          </div>
 
-      <div class="card">
-        <h3 id="barLabel" data-t="barLabel">How the full cost gets covered</h3>
-        <div class="bar" id="bar" role="img" aria-labelledby="barLabel"></div>
-        <dl class="totals" id="totals"></dl>
-      </div>
+          <div class="d-block">
+            <h3 id="barLabel" data-t="barLabel">How the full cost gets covered</h3>
+            <div class="d-bar" id="bar" role="img" aria-labelledby="barLabel"></div>
+            <dl class="d-totals" id="totals"></dl>
+          </div>
 
-      <div class="card warn" id="watch" hidden>
-        <h3 data-t="watchTitle">Watch out for</h3>
-        <ul id="flags"></ul>
-      </div>
+          <div class="d-block" id="watch" hidden>
+            <h3 data-t="watchTitle">Watch out for</h3>
+            <ol class="d-flags" id="flags"></ol>
+          </div>
 
-      <div class="card" id="missing" hidden>
-        <h3 data-t="missingTitle">Costs the letter left out</h3>
-        <p data-t="missingHelp"></p>
-        <label for="extraCost" data-t="missingLabel">Missing costs for one year</label>
-        <div class="money-input"><span aria-hidden="true">$</span><input id="extraCost" type="number" inputmode="numeric" min="0" step="100" placeholder="0"></div>
-      </div>
+          <div class="d-block" id="missing" hidden>
+            <div class="d-tile">
+              <h3 data-t="missingTitle">Costs the letter left out</h3>
+              <p data-t="missingHelp"></p>
+              <label for="extraCost" data-t="missingLabel">Missing costs for one year</label>
+              <div class="d-money"><span aria-hidden="true">$</span><input id="extraCost" type="number" inputmode="numeric" min="0" step="100" placeholder="0"></div>
+            </div>
+          </div>
 
-      <div class="groups">
-        <div class="card group g-grant"><h3 data-t="grantsTitle">Gifts</h3><ul id="listGrant"></ul></div>
-        <div class="card group g-loan"><h3 data-t="loansTitle">Loans</h3><ul id="listLoan"></ul><div id="payback"></div></div>
-        <div class="card group g-work"><h3 data-t="workTitle">Work-study</h3><ul id="listWork"></ul></div>
-      </div>
+          <div class="d-block d-groups">
+            <div class="d-group"><h3><span class="sw grant" aria-hidden="true"></span><span data-t="grantsTitle">Gifts</span></h3><ul id="listGrant"></ul></div>
+            <div class="d-group"><h3><span class="sw loan" aria-hidden="true"></span><span data-t="loansTitle">Loans</span></h3><ul id="listLoan"></ul></div>
+            <div class="d-group"><h3><span class="sw work" aria-hidden="true"></span><span data-t="workTitle">Work-study</span></h3><ul id="listWork"></ul></div>
+            <div class="d-payback" id="payback"></div>
+          </div>
 
-      <div class="card" id="aiBox" hidden>
-        <h3 data-t="aiTitle">Not sure about some lines?</h3>
-        <p data-t="aiHelp"></p>
-        <button type="button" class="ghost" id="aiRun" data-t="aiButton">Ask the on-device AI</button>
-        <p class="status" id="aiStatus" role="status" aria-live="polite"></p>
-      </div>
+          <div class="d-block" id="aiBox" hidden>
+            <div class="d-tile">
+              <h3 data-t="aiTitle">Not sure about some lines?</h3>
+              <p data-t="aiHelp"></p>
+              <button type="button" class="c-btn c-btn-sm c-btn-ink" id="aiRun" data-t="aiButton">Ask the on-device AI</button>
+              <p class="d-status" id="aiStatus" role="status" aria-live="polite"></p>
+            </div>
+          </div>
 
-      <div class="card">
-        <h3 data-t="linesTitle">Every line we found</h3>
-        <p class="hint" data-t="linesHelp">Wrong sort? Change it here and the numbers update.</p>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th scope="col" data-t="colLine">Line</th><th scope="col" class="num" data-t="colAmount">Amount</th><th scope="col" data-t="colType">What it is</th></tr></thead>
-            <tbody id="lines"></tbody>
-          </table>
-        </div>
-      </div>
+          <div class="d-block">
+            <h3 data-t="linesTitle">Every line we found</h3>
+            <p class="d-hint" data-t="linesHelp">Wrong sort? Change it here and the numbers update.</p>
+            <div class="d-table">
+              <table>
+                <thead><tr><th scope="col" data-t="colLine">Line</th><th scope="col" class="num" data-t="colAmount">Amount</th><th scope="col" data-t="colType">What it is</th></tr></thead>
+                <tbody id="lines"></tbody>
+              </table>
+            </div>
+          </div>
 
-      <div class="card">
-        <h3 data-t="questionsTitle">Questions to ask the aid office</h3>
-        <ol id="questions"></ol>
+          <div class="d-block">
+            <h3 data-t="questionsTitle">Questions to ask the aid office</h3>
+            <ol class="d-plist" id="questions"></ol>
+          </div>
+        </section>
       </div>
-    </section>
+    </div>
   </main>
 
-  <footer class="wrap foot"><p data-t="footer"></p></footer>
+  <footer class="c-foot">
+    <div class="c-wrap d-foot">
+      <a class="c-logo" href="https://joinclarityprep.com">
+        <svg viewBox="-50 -50 100 100" aria-hidden="true"><circle r="36" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-dasharray="179.69909978533616 226.1946710584651" transform="rotate(37)"></circle><circle r="7" fill="currentColor"></circle></svg>
+        <span>Clarity Prep</span>
+      </a>
+      <p data-t="footer"></p>
+    </div>
+  </footer>
 
   <script src="vendor/pdf.min.js"></script>
   <script src="decoder.js"></script>

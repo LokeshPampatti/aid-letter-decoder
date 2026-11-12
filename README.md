@@ -23,7 +23,7 @@ Then visit http://127.0.0.1:5178 and click one of the three sample letters.
 - Flags missing costs (letters that list only billed costs), Parent PLUS loans, private loans, vague "award" lines, unclear "Federal Direct Loan" lines and GPA renewal rules.
 - Estimates monthly payments over 10 years (2025-26 federal rates, clearly labeled as a rough estimate).
 - Every line can be re-sorted by hand and the totals update.
-- English and Spanish, read-aloud (browser speech), keyboard and screen-reader friendly, dark mode, works on a phone, works offline from the folder.
+- English and Spanish, read-aloud (browser speech), keyboard and screen-reader friendly, works on a phone, works offline from the folder.
 
 ## The AI part
 

@@ -14,13 +14,15 @@ Built Nov 11, 2026. One build, two hackathons.
 ## What is ready
 
 - Working site: `~/Downloads/aid-letter-decoder/` (open `index.html`, or `python3 -m http.server 5178` in that folder)
-- Demo video: `demo/aid-letter-decoder-demo.mp4` (1:36, 1280x800, captions on screen, no voiceover)
+- Demo video: `demo/aid-letter-decoder-demo.mp4` (1:46, 1280x800, captions on screen, no voiceover)
 - Screenshots: `screenshots/1-home.png` to `6-phone.png`
 - Sample letters: `samples/` (3 made-up schools, plus one as a PDF)
 - README and MIT license for the repo
 - Local git repo with one commit, **not pushed anywhere**
 
 ## What needs Loki (nothing is public yet)
+
+**On hold (Nov 12):** Loki said yes to all three, then asked to restyle the decoder to match Clarity Prep's other tools and "don't publish this". Nothing has been pushed or uploaded. The restyle is done (Schibsted Grotesk, ink, lava orange, paper, the same stage and card as the GPA calculator and essay grader). Wait for a fresh OK on the new look before 1-3. Note: Chrome's GitHub sign-in is the `Loki-Pam` account, not `LokeshPampatti`; confirm which account should own the repo.
 
 1. **OK to make a public GitHub repo** `LokeshPampatti/aid-letter-decoder` and push this folder. SLAY requires a source repo.
 2. **OK to host the demo** so judges can click it (GitHub Pages from that repo, or a Vercel Hobby project). AccessED wants judging links live through Nov 22.
@@ -49,12 +51,12 @@ I run a small college admissions guidance service, and this letter is where firs
 You paste the letter text, open the PDF, or try one of three sample letters. In under a second you get:
 
 - **The real price for one year**: the full cost minus gifts only. Loans and work-study are never treated as discounts.
-- **Every line sorted** into gifts (grants and scholarships), loans and work-study, with a color bar showing how the cost gets covered.
+- **Every line sorted** into gifts (grants and scholarships), loans and work-study, with a bar showing how the cost gets covered (black for gifts, orange for loans, gray for work-study).
 - **Plain-English warnings** written for a 16-year-old or a busy parent: when the letter's "net cost" hides loans, when a Parent PLUS loan is in a parent's name, when a "Federal Direct Loan" could be subsidized or not, when "award" is vague, when a scholarship needs a GPA to renew, and when the letter leaves out books, travel and personal costs.
 - **What the loans cost later**: a rough monthly payment over 10 years, with the rates it assumes shown on screen.
 - **A box for missing costs**, so a family can add what the letter left out and watch the price update.
 - **Questions to ask the aid office** before signing anything.
-- **Spanish with one click**, read-aloud, full keyboard and screen-reader support, dark mode, and a layout that works on a phone.
+- **Spanish with one click**, read-aloud, full keyboard and screen-reader support, and a layout that works on a phone.
 
 Every line can be re-sorted by hand, and nothing is uploaded. The letter never leaves the device, and the page works offline once it is on the computer.
 

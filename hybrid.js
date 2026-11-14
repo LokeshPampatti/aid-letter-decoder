@@ -10,10 +10,13 @@
  *   3. readPhoto:  copy the text out of a photo of a paper letter.
  *
  * App Check (reCAPTCHA Enterprise, score-based, no puzzle) protects the cloud model.
- * On localhost it uses a debug token instead.
+ * On localhost it uses a debug token instead. The Chrome extension build is on-device only.
  */
 const V = '13.3.0';
-const base = 'https://www.gstatic.com/firebasejs/' + V + '/';
+// The Chrome extension cannot load code from the web, so it ships the same SDK files in vendor/firebase.
+// It also runs on the device only: nothing from the side panel is ever sent to the cloud.
+const EXT = location.protocol === 'chrome-extension:';
+const base = EXT ? new URL('vendor/firebase/', import.meta.url).href : 'https://www.gstatic.com/firebasejs/' + V + '/';
 
 const CATS = ['grant', 'loan', 'work', 'cost', 'ignore'];
 const LANGS = { en: 'English', es: 'Spanish' };
@@ -38,7 +41,7 @@ async function load() {
   const app = appMod.initializeApp(c.firebase);
   const local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
   if (local) self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-  if (c.recaptchaSiteKey || local) {
+  if (!EXT && (c.recaptchaSiteKey || local)) {
     checkMod.initializeAppCheck(app, {
       provider: new checkMod.ReCaptchaEnterpriseProvider(c.recaptchaSiteKey || 'debug'),
       isTokenAutoRefreshEnabled: true
@@ -68,7 +71,7 @@ async function load() {
 
   function make(schema, inputs) {
     const p = {
-      mode: InferenceMode.PREFER_ON_DEVICE,
+      mode: EXT ? InferenceMode.ONLY_ON_DEVICE : InferenceMode.PREFER_ON_DEVICE,
       onDeviceParams: {
         createOptions: {
           expectedInputs: inputs,
@@ -97,13 +100,13 @@ async function load() {
 async function status() {
   if (!cfg() || !cfg().firebase) return 'off';
   const LM = self.LanguageModel;
-  if (!LM || !LM.availability) return 'cloud-only';
+  if (!LM || !LM.availability) return EXT ? 'off' : 'cloud-only';
   try {
     const a = await LM.availability({ expectedInputs: [{ type: 'text', languages: ['en', 'es'] }], expectedOutputs: [{ type: 'text', languages: ['en', 'es'] }] });
     if (a === 'available') return 'on-device';
     if (a === 'downloadable') return 'downloadable';
     if (a === 'downloading') return 'downloading';
-    return 'cloud-only';
+    return EXT ? 'off' : 'cloud-only';
   } catch (e) {
     return 'cloud-only';
   }
@@ -214,5 +217,5 @@ async function readPhoto(blob) {
   return { text: r.response.text().trim(), source: sourceOf(r) };
 }
 
-window.HybridAI = { status, download, sortLines, explain, readPhoto, get lastSource() { return lastSource; } };
+window.HybridAI = { status, download, sortLines, explain, readPhoto, ext: EXT, get lastSource() { return lastSource; } };
 window.dispatchEvent(new Event('hybridai-ready'));

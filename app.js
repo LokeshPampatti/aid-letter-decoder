@@ -155,7 +155,8 @@
     el('questions').innerHTML = T.questions.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('');
 
     var unsure = state.items.filter(function (i) { return i.cat === 'unknown' || (i.check && !i.ai && !i.aiSrc); });
-    el('aiBox').hidden = !unsure.length;
+    // The extension cannot load the web-hosted fallback model, so without Nano it hides AI help.
+    el('aiBox').hidden = !unsure.length || (H() && H().ext && engine === 'off');
     var gem = engine !== 'off';
     el('explainBox').hidden = !gem;
     var nano = engine === 'on-device';
@@ -310,8 +311,9 @@
     return H().status().then(function (st) {
       engine = st;
       var key = { 'on-device': 'engineDevice', downloadable: 'engineDownload', downloading: 'engineDownloading', 'cloud-only': 'engineCloud', off: 'engineOff' }[st];
-      el('engine').hidden = st === 'off';
-      el('engineText').textContent = T[key] || '';
+      var extOff = H().ext && st === 'off';
+      el('engine').hidden = st === 'off' && !extOff;
+      el('engineText').textContent = extOff ? T.engineExtOff : (T[key] || '');
       el('engineGet').hidden = st !== 'downloadable';
       el('photoRow').hidden = st === 'off';
       el('photoSample').hidden = st === 'off';

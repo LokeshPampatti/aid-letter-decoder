@@ -1,0 +1,24 @@
+{
+  "when": "2026-11-14T19:17:15.897Z",
+  "engine": "AI: Gemini Nano is ready on this computer. Your letter stays here.",
+  "url": "http://localhost:5178/",
+  "summaries": {
+    "runs": 30,
+    "numbersOk": 100,
+    "priceFirst": 100,
+    "onDevice": 100,
+    "medianMs": 7411
+  },
+  "sorting": {
+    "runs": 3,
+    "accuracy": 89,
+    "medianMs": 94751,
+    "source": "device"
+  },
+  "photo": {
+    "runs": 3,
+    "priceRight": 100,
+    "gpaRuleKept": 100,
+    "medianMs": 13296
+  }
+}

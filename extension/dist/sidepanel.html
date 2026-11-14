@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aid Letter Decoder</title>
+  <meta name="description" content="Paste a college financial aid letter and see what is a gift, what is a loan, and the real price. Runs on your device.">
+  <meta name="color-scheme" content="light">
+  <link rel="preload" href="vendor/fonts/schibsted-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="c">
+  <a class="c-skip" href="#letter" data-t="skip">Skip to the letter box</a>
+  <header class="c-hdr" id="hdr">
+    <div class="c-wrap c-hdr-in">
+      <a class="c-logo" href="https://joinclarityprep.com" aria-label="Clarity Prep home">
+        <svg viewBox="-50 -50 100 100" aria-hidden="true"><circle r="36" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-dasharray="179.69909978533616 226.1946710584651" transform="rotate(37)"></circle><circle r="7" fill="currentColor"></circle></svg>
+        <span>Clarity Prep</span>
+      </a>
+      <div class="d-seg" role="group" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true">English</button>
+        <button type="button" data-lang="es" aria-pressed="false" lang="es">Español</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <div id="startScreen" class="c-wrap a-start">
+      <section class="a-intro">
+        <p class="a-kick"><span class="d-dot" aria-hidden="true"></span><span data-t="kicker">Aid letter decoder</span></p>
+        <h1><span data-t="heroA">What will this college</span> <em data-t="heroEm">really</em> <span data-t="heroB">cost?</span></h1>
+        <p class="c-lead" data-t="tagline">Aid letters mix gifts, loans and jobs into one list. Paste yours and see the real price for one year.</p>
+        <ol class="a-how">
+          <li><span aria-hidden="true">1</span><span data-t="how1">Paste the letter, open the PDF, or take a photo.</span></li>
+          <li><span aria-hidden="true">2</span><span data-t="how2">Every line gets marked: gift, loan or work-study.</span></li>
+          <li><span aria-hidden="true">3</span><span data-t="how3">See the real price and what to ask the aid office.</span></li>
+        </ol>
+        <p class="a-fine" data-t="privacy">Your letter stays on this device. Nothing is uploaded or saved.</p>
+      </section>
+
+      <section class="a-sheet d-input" aria-labelledby="step1">
+        <div class="a-drop">
+          <div class="a-drop-head">
+            <label id="step1" for="letter" data-t="pasteLabel">Your aid letter</label>
+            <button type="button" class="d-textbtn" id="clear" data-t="clear">Clear</button>
+          </div>
+          <textarea id="letter" rows="9" spellcheck="false"></textarea>
+          <div class="a-alt">
+            <label class="a-opt d-file">
+              <input type="file" id="file" accept=".pdf,.txt,application/pdf,text/plain">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg>
+              <span><b data-t="uploadLabel">Open a PDF</b><small data-t="uploadHint">Read on this device</small></span>
+            </label>
+            <label class="a-opt d-file" id="photoRow" hidden>
+              <input type="file" id="photo" accept="image/jpeg,image/png" capture="environment">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.5"/><path d="M9 7l1.5-3h3L15 7"/></svg>
+              <span><b data-t="photoLabel">Photo of a paper letter</b><small data-t="photoHint">Read by Gemini</small></span>
+            </label>
+          </div>
+          <div class="d-engine" id="engine" hidden>
+            <span class="d-dot" aria-hidden="true"></span>
+            <span id="engineText"></span>
+            <button type="button" class="d-textbtn" id="engineGet" hidden data-t="engineGet">Download Gemini Nano</button>
+          </div>
+          <button type="button" class="c-btn c-btn-lava a-go" id="decode" data-t="decode">Decode my letter</button>
+          <p class="d-status" id="status" role="status" aria-live="polite"></p>
+        </div>
+        <div class="a-samples">
+          <p data-t="samplesLabel">No letter yet? Open a sample.</p>
+          <div class="a-pile">
+            <button type="button" class="a-mini" data-sample="northgate"><b>Northgate University</b><span data-t="sampleNorthgate">Says $9,220, really $43,600</span></button>
+            <button type="button" class="a-mini" data-sample="riverbend"><b>State College of Riverbend</b><span data-t="sampleRiverbend">Public school, Fall and Spring columns</span></button>
+            <button type="button" class="a-mini" data-sample="lakeshore"><b>Lakeshore Institute</b><span data-t="sampleLakeshore">Vague award names</span></button>
+          </div>
+          <button type="button" class="d-textbtn a-photo-sample" id="photoSample" hidden data-t="photoSample">Try a sample photo</button>
+        </div>
+      </section>
+    </div>
+
+    <div id="results" hidden>
+      <div class="c-wrap a-top">
+        <p class="a-school"><b id="school"></b><span id="resultsNote" role="status" aria-live="polite"></span></p>
+        <div class="a-top-btns">
+          <button type="button" class="d-textbtn" id="speak" data-t="readAloud">Read results aloud</button>
+          <button type="button" class="c-btn c-btn-sm c-btn-line" id="again" data-t="again">Use a different letter</button>
+        </div>
+      </div>
+
+      <div class="c-wrap a-answer">
+        <aside class="a-verdict">
+          <h2 id="resultsHeading" tabindex="-1" class="a-k" data-t="realPrice">Real price for one year</h2>
+          <p class="a-price" id="realPrice">$0</p>
+          <p class="a-sub" id="realPriceSub"></p>
+          <h3 class="a-vh" id="barLabel" data-t="barLabel">How the full cost gets covered</h3>
+          <div class="d-bar" id="bar" role="img" aria-labelledby="barLabel"></div>
+          <dl class="a-legend" id="totals"></dl>
+
+          <div class="a-plain" id="explainBox" hidden>
+            <div class="a-plain-head"><h3 data-t="explainTitle">In plain words</h3><span class="a-engine" id="engineMini"></span></div>
+            <p class="a-help" data-t="explainHelp"></p>
+            <div class="d-explain" id="explainOut" hidden></div>
+            <button type="button" class="c-btn c-btn-sm c-btn-ink" id="explainRun" data-t="explainButton">Explain my letter</button>
+            <p class="d-status" id="explainStatus" role="status" aria-live="polite"></p>
+          </div>
+
+          <div class="a-plain" id="aiBox" hidden>
+            <h3 data-t="aiTitle">Not sure about some lines?</h3>
+            <p class="a-help" data-t="aiHelp"></p>
+            <button type="button" class="c-btn c-btn-sm c-btn-line" id="aiRun" data-t="aiButton">Ask the on-device AI</button>
+            <p class="d-status" id="aiStatus" role="status" aria-live="polite"></p>
+          </div>
+        </aside>
+
+        <section class="a-letter" aria-labelledby="letterTitle">
+          <div class="a-lhead"><h2 id="letterTitle" data-t="letterTitle">Your letter, marked up</h2><p data-t="linesHelp">Wrong tag? Change it and the price updates.</p></div>
+          <ul class="a-general" id="general"></ul>
+          <div class="a-paper" id="lines"></div>
+        </section>
+      </div>
+
+      <div class="c-wrap a-more">
+        <section>
+          <h3 data-t="loansLaterTitle">What the loans cost later</h3>
+          <div class="a-payback" id="payback"></div>
+        </section>
+        <section id="missing">
+          <h3 data-t="missingTitle">Costs the letter left out</h3>
+          <p data-t="missingHelp"></p>
+          <label for="extraCost" data-t="missingLabel">Missing costs for one year</label>
+          <div class="d-money"><span aria-hidden="true">$</span><input id="extraCost" type="number" inputmode="numeric" min="0" step="100" placeholder="0"></div>
+        </section>
+        <section>
+          <h3 data-t="questionsTitle">Questions to ask the aid office</h3>
+          <ol class="d-plist" id="questions"></ol>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <div class="d-ask" id="ask" hidden role="alertdialog" aria-labelledby="askText">
+    <p id="askText"></p>
+    <div class="d-actions">
+      <button type="button" class="c-btn c-btn-sm c-btn-ink" id="askYes" data-t="cloudYes">Yes, use the cloud</button>
+      <button type="button" class="d-textbtn" id="askNo" data-t="cloudNo">No thanks</button>
+    </div>
+  </div>
+
+  <footer class="c-foot">
+    <div class="c-wrap d-foot">
+      <a class="c-logo" href="https://joinclarityprep.com">
+        <svg viewBox="-50 -50 100 100" aria-hidden="true"><circle r="36" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-dasharray="179.69909978533616 226.1946710584651" transform="rotate(37)"></circle><circle r="7" fill="currentColor"></circle></svg>
+        <span>Clarity Prep</span>
+      </a>
+      <p data-t="footer"></p>
+    </div>
+  </footer>
+
+  <script src="vendor/pdf.min.js"></script>
+  <script src="decoder.js"></script>
+  <script src="samples.js"></script>
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+  <script src="firebase-config.js"></script>
+  <script type="module" src="hybrid.js"></script>
+  <script src="ext.js"></script>
+</body>
+</html>

@@ -6,7 +6,7 @@ It runs entirely in the browser. No account, no server, no upload. The letter ne
 
 ## Try it
 
-Live: https://lokeshpampatti.github.io/aid-letter-decoder/ · Demo video: https://youtu.be/OFkOC5Jwi_M
+Live: https://lokeshpampatti.github.io/aid-letter-decoder/ · Demo video: https://youtu.be/mk3MtH3vicc
 
 Or run it locally: open `index.html` in any modern browser, or serve the folder:
 
@@ -49,6 +49,20 @@ The older fallback: a small sentence-embedding model (`Xenova/all-MiniLM-L6-v2`,
 
 Gemini Nano needs a recent desktop Chrome with enough disk space (tested on Chrome 156, macOS); the page offers the one-time download with a progress bar.
 
+## Chrome extension
+
+The same decoder as a Chrome side panel, for letters that arrive in email or a PDF in the browser: select the letter text, right-click, **Decode this aid letter**. It shares `hybrid.js` with the website and runs **on the device only** (`InferenceMode.ONLY_ON_DEVICE`): the extension never sends anything to the cloud. Without Gemini Nano, the decoder still works and AI help is turned off.
+
+```bash
+./extension/build.sh
+```
+
+Then open `chrome://extensions`, turn on Developer mode, click **Load unpacked** and pick `extension/dist`. The build copies the site's files and bundles the Firebase SDK (extensions cannot load code from the web).
+
+## Measured
+
+`eval/run.mjs` runs real Gemini Nano in Chrome on the sample letters and writes `eval/results.json`: how often every number in a summary checks out, sort accuracy on school-made line names, photo-reading accuracy, and time per job.
+
 ## Files
 
 | File | What it is |
@@ -60,6 +74,8 @@ Gemini Nano needs a recent desktop Chrome with enough disk space (tested on Chro
 | `firebase-config.js` | Public Firebase web config (set `firebase: null` to turn Gemini off) |
 | `i18n.js` | All text in English and Spanish |
 | `samples/` | Three made-up letters (plus one as a PDF and one as a phone photo) |
+| `extension/` | Chrome side panel build (`build.sh`, `src/`), on the device only |
+| `eval/` | Measures the AI with real Gemini Nano (`run.mjs`, `results.json`) |
 | `vendor/` | pdf.js 3.11.174 (Apache 2.0), kept local so the page works offline |
 
 ## Run the parser in Node

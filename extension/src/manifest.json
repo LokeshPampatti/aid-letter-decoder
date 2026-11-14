@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Aid Letter Decoder",
+  "version": "1.0.0",
+  "description": "Select a college aid letter on any page or PDF and see the real price, every loan marked. Gemini Nano runs on your computer only.",
+  "minimum_chrome_version": "138",
+  "icons": { "16": "icons/16.png", "48": "icons/48.png", "128": "icons/128.png" },
+  "action": { "default_title": "Open Aid Letter Decoder" },
+  "side_panel": { "default_path": "sidepanel.html" },
+  "background": { "service_worker": "background.js" },
+  "permissions": ["sidePanel", "contextMenus", "storage"]
+}

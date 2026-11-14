@@ -144,7 +144,7 @@ async function sortLines(labels, lang) {
   const prompt =
     'You sort lines from a United States college financial aid letter.\n' +
     'Categories:\n' +
-    '- grant: free money that is never paid back (grants, scholarships, awards, tuition discounts, waivers).\n' +
+    '- grant: gift money that is never paid back (grants, scholarships, awards, tuition discounts, waivers).\n' +
     '- loan: borrowed money that must be paid back, even if the letter calls it an award, option or plan.\n' +
     '- work: work-study or campus job pay the student has to earn.\n' +
     '- cost: something the family pays for (tuition, fees, housing, meals, books, travel).\n' +
@@ -173,7 +173,7 @@ async function explain(facts, lang) {
   const prompt =
     'Explain this college financial aid offer to a family in ' + LANGS[lang] + '.\n' +
     'Rules: exactly 4 short sentences, plain text only. No greeting, no markdown, no bold, no dashes, no exclamation marks.\n' +
-    'Sentence 1 tells the family the REAL PRICE for one year. Sentence 2: the gifts. Sentence 3: the loans and who repays them, and any work-study. Sentence 4: one thing to ask the aid office.\n' +
+    'Sentence 1 tells the family the REAL PRICE for one year. Sentence 2: the gifts. Sentence 3: the loans and who repays them; if there is work-study, say it is pay from a job and is never repaid. Sentence 4: one thing to ask the aid office.\n' +
     'Plain words a 16-year-old knows. Use only the numbers given, written exactly as given. Never call a loan or work-study a discount.\n\n' +
     'Facts:\n' + facts.lines.join('\n');
   const allowed = new Set(facts.numbers.map(function (n) { return String(Math.round(n)); }));

@@ -48,10 +48,28 @@
     state.notes = parsed.notes;
     el('extraCost').value = '';
     el('aiStatus').textContent = '';
+    el('explainOut').hidden = true;
+    el('explainStatus').textContent = '';
+    el('resultsNote').textContent = '';
+    el('school').textContent = schoolName(text);
+    el('startScreen').hidden = true;
     el('results').hidden = false;
     render();
-    el('resultsHeading').focus();
-    el('resultsHeading').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    window.scrollTo(0, 0);
+    el('resultsHeading').focus({ preventScroll: true });
+  }
+  function showStart() {
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    el('results').hidden = true;
+    el('startScreen').hidden = false;
+    window.scrollTo(0, 0);
+    el('letter').focus({ preventScroll: true });
+  }
+  // The first short line without a dollar amount, usually the school's name.
+  function schoolName(text) {
+    var lines = text.split(/\n/).map(function (l) { return l.trim(); }).filter(Boolean);
+    for (var i = 0; i < Math.min(lines.length, 4); i++) if (!/\$|\d{3}/.test(lines[i]) && lines[i].length < 60) return lines[i];
+    return '';
   }
 
   function readFile(file) {
@@ -105,7 +123,8 @@
     state.summary = s;
 
     el('realPrice').textContent = s.cost ? $(s.net) : '?';
-    el('realPriceSub').textContent = s.cost ? T.realPriceSub(s) : T.flags.noCost;
+    var wrong = s.flags.filter(function (f) { return f.key === 'claimedNetWrong'; })[0];
+    el('realPriceSub').innerHTML = !s.cost ? esc(T.flags.noCost) : wrong ? esc(T.claimLine(wrong.claimed)).replace(esc($(wrong.claimed)), '<s>' + esc($(wrong.claimed)) + '</s>') : esc(T.realPriceSub(s));
 
     // Bar: share of the full cost covered by each kind of money.
     var base = Math.max(s.cost, s.grants + s.loans + s.work, 1);
@@ -117,38 +136,22 @@
     el('bar').setAttribute('aria-label', T.barLabel + ': ' + [T.bigGrants + ' ' + $(s.grants), T.bigLoans + ' ' + $(s.loans), T.bigWork + ' ' + $(s.work), T.bigCash + ' ' + $(gap)].join('; '));
 
     el('totals').innerHTML = [
-      ['cost', T.bigCost, s.cost ? $(s.cost) : '?'],
       ['grant', T.bigGrants, $(s.grants)],
       ['loan', T.bigLoans, $(s.loans)],
       ['work', T.bigWork, $(s.work)],
-      ['gap', T.bigCash, s.cost ? $(gap) : '?']
+      ['gap', T.bigCash, s.cost ? $(gap) : '?'],
+      ['cost', T.bigCost, s.cost ? $(s.cost) : '?']
     ].map(function (r) {
-      return '<div><dt><span class="sw ' + r[0] + '" aria-hidden="true"></span>' + esc(r[1]) + '</dt><dd>' + r[2] + '</dd></div>';
+      return '<div class="l-' + r[0] + '"><dt><span class="sw ' + r[0] + '" aria-hidden="true"></span>' + esc(r[1]) + '</dt><dd>' + r[2] + '</dd></div>';
     }).join('');
-
-    // Flags
-    var flagsHtml = s.flags.map(function (f) {
-      var v = T.flags[f.key];
-      var txt = typeof v === 'function' ? v(f) : v;
-      var extra = f.key === 'renewal' ? f.lines.map(function (l) { return '<blockquote>' + esc(l) + '</blockquote>'; }).join('') : '';
-      return '<li>' + esc(txt) + extra + '</li>';
-    }).join('');
-    el('flags').innerHTML = flagsHtml;
-    el('watch').hidden = !s.flags.length;
-
-    el('missing').hidden = !s.flags.some(function (f) { return f.key === 'noCost' || f.key === 'directOnly'; }) && !s.extra;
-
-    list('listGrant', 'grant', T.grantsEmpty);
-    list('listLoan', 'loan', T.loansEmpty);
-    list('listWork', 'work', T.workEmpty);
 
     var pb = '';
     if (s.studentPayback.yearly) pb += '<p>' + esc(T.payback(s.studentPayback, T.whoStudent)) + '</p>';
     if (s.parentPayback.yearly) pb += '<p>' + esc(T.payback(s.parentPayback, T.whoParent)) + '</p>';
-    if (pb) pb += '<p class="fine">' + esc(T.paybackNote) + '</p>';
+    pb = pb ? pb + '<p class="fine">' + esc(T.paybackNote) + '</p>' : '<p>' + esc(T.paybackNone) + '</p>';
     el('payback').innerHTML = pb;
 
-    renderLines();
+    renderLines(s);
     el('questions').innerHTML = T.questions.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('');
 
     var unsure = state.items.filter(function (i) { return i.cat === 'unknown' || (i.check && !i.ai && !i.aiSrc); });
@@ -167,19 +170,70 @@
     }).join('') : '<li class="empty">' + esc(empty) + '</li>';
   }
 
-  function renderLines() {
-    var cats = ['grant', 'loan', 'work', 'cost', 'summary', 'unknown', 'ignore'];
-    el('lines').innerHTML = state.items.map(function (i) {
-      var tags = (i.check && i.cat !== 'unknown' ? ' <span class="tag" title="' + esc(T.checkTip) + '">' + esc(T.checkTag) + '</span>' : '') +
-        (i.aiSrc ? ' <span class="tag ai">' + esc(i.aiSrc === 'cloud' ? T.aiTagCloud : T.aiTagNano) + '</span>' :
-          i.ai ? ' <span class="tag ai">' + esc(T.aiTag) + ' ' + Math.round(i.ai * 100) + '%</span>' : '') +
-        (i.why ? '<span class="d-why">' + esc(i.why) + '</span>' : '');
-      return '<tr class="t-' + i.cat + '"><td>' + esc(i.label) + tags + '</td><td class="num">' + $(i.amount) + '</td><td>' +
-        '<select data-id="' + i.id + '" aria-label="' + esc(T.colType + ': ' + i.label) + '">' +
-        cats.map(function (c) { return '<option value="' + c + '"' + (c === i.cat ? ' selected' : '') + '>' + esc(T.cat[c]) + '</option>'; }).join('') +
-        '</select></td></tr>';
-    }).join('');
+  // Warnings sit next to the line they are about. The rest go above the letter.
+  var LAVA = ['claimedNetWrong', 'parentPlus', 'privateLoan', 'pushesPrivate', 'overBorrow', 'noCost', 'directOnly'];
+  var GENERIC = /^(scholarship|scholarships|grant|grants|award|awards|university|college|institute|federal|state|direct|program)$/;
+  function notesFor(s) {
+    var byId = {}, general = [];
+    function find(fn) { return state.items.filter(fn)[0] || null; }
+    function words(label) { return label.toLowerCase().split(/[^a-z']+/).filter(function (w) { return w.length > 4 && !GENERIC.test(w); }); }
+    s.flags.forEach(function (f) {
+      var v = T.flags[f.key];
+      var n = { title: T.noteTitle[f.key] || '', text: typeof v === 'function' ? v(f) : v, quote: f.key === 'renewal' ? f.lines : null, lava: LAVA.indexOf(f.key) !== -1 };
+      var t = null;
+      if (f.key === 'claimedNetWrong') t = find(function (i) { return i.cat === 'summary' && Math.abs(i.amount - f.claimed) < 1; });
+      else if (f.key === 'parentPlus') t = find(function (i) { return i.cat === 'loan' && i.kind === 'parentplus'; });
+      else if (f.key === 'privateLoan') t = find(function (i) { return i.cat === 'loan' && (i.kind === 'private' || i.kind === 'institutional'); });
+      else if (f.key === 'federalUnclear') t = find(function (i) { return i.kind === 'federalUnclear'; });
+      else if (f.key === 'vagueAward') t = find(function (i) { return i.kind === 'vagueAward'; });
+      else if (f.key === 'workStudy') t = find(function (i) { return i.cat === 'work'; });
+      else if (f.key === 'renewal') {
+        var said = f.lines.join(' ').toLowerCase();
+        t = find(function (i) { return i.cat === 'grant' && words(i.label).some(function (w) { return said.indexOf(w) !== -1; }); });
+      }
+      if (t) (byId[t.id] = byId[t.id] || []).push(n); else general.push(n);
+    });
+    return { byId: byId, general: general };
   }
+  function noteHtml(n) {
+    return '<div class="a-note' + (n.lava ? ' lava' : '') + '"><b>' + esc(n.title) + '</b><p>' + esc(n.text) + '</p>' +
+      (n.quote ? n.quote.map(function (l) { return '<blockquote>' + esc(l) + '</blockquote>'; }).join('') : '') + '</div>';
+  }
+  function renderLines(s) {
+    var cats = ['grant', 'loan', 'work', 'cost', 'summary', 'unknown', 'ignore'];
+    var notes = notesFor(s);
+    el('general').innerHTML = notes.general.map(function (n) { return '<li>' + noteHtml(n) + '</li>'; }).join('');
+    var head = el('school').textContent;
+    el('lines').innerHTML = (head ? '<div class="a-row a-hd"><div class="a-ln">' + esc(head) + '</div><div class="a-notes"></div></div>' : '') +
+      state.items.map(function (i) {
+        var tags = (i.check && i.cat !== 'unknown' ? ' <span class="tag" title="' + esc(T.checkTip) + '">' + esc(T.checkTag) + '</span>' : '') +
+          (i.aiSrc ? ' <span class="tag ai">' + esc(i.aiSrc === 'cloud' ? T.aiTagCloud : T.aiTagNano) + '</span>' :
+            i.ai ? ' <span class="tag ai">' + esc(T.aiTag) + ' ' + Math.round(i.ai * 100) + '%</span>' : '') +
+          (i.why ? '<span class="d-why">' + esc(i.why) + '</span>' : '');
+        return '<div class="a-row t-' + i.cat + '"><div class="a-ln"><span class="a-lbl"><span class="a-lt">' + esc(i.label) + '</span>' + tags + '</span>' +
+          '<span class="a-amt">' + $(i.amount) + '</span>' +
+          '<select class="a-tag" data-id="' + i.id + '" aria-label="' + esc(T.tagAria(i.label)) + '">' +
+          cats.map(function (c) { return '<option value="' + c + '"' + (c === i.cat ? ' selected' : '') + '>' + esc(T.tagName[c]) + '</option>'; }).join('') +
+          '</select></div><div class="a-notes">' + (notes.byId[i.id] || []).map(noteHtml).join('') + '</div></div>';
+      }).join('');
+    placeNotes();
+  }
+  // Wide screens: notes float in the margin beside their line and stack down, so the letter stays tight.
+  var wide = window.matchMedia('(min-width: 981px)');
+  function placeNotes() {
+    var paper = el('lines'), floor = 0;
+    paper.style.minHeight = '';
+    paper.querySelectorAll('.a-notes').forEach(function (n) {
+      n.style.top = '';
+      if (!wide.matches || !n.children.length) return;
+      var top = Math.max(n.parentNode.offsetTop, floor);
+      n.style.top = top + 'px';
+      floor = top + n.offsetHeight + 14;
+    });
+    if (wide.matches && floor) paper.style.minHeight = (floor + 18) + 'px';
+  }
+  window.addEventListener('resize', placeNotes);
+  if (document.fonts) document.fonts.ready.then(function () { if (!el('results').hidden) placeNotes(); });
 
   // ---------- read aloud ----------
   function speakText() {
@@ -260,6 +314,8 @@
       el('engineText').textContent = T[key] || '';
       el('engineGet').hidden = st !== 'downloadable';
       el('photoRow').hidden = st === 'off';
+      el('photoSample').hidden = st === 'off';
+      el('engineMini').textContent = T.engineShort[st] || '';
       if (!el('results').hidden) render();
     });
   }
@@ -306,7 +362,7 @@
       'Full cost for one year before any aid: ' + (s.cost ? $(s.cost) : 'not listed in the letter'),
       'Gifts (never repaid): ' + $(s.grants) + ' (' + names('grant') + ')',
       'Loans (must be repaid): ' + $(s.loans) + ' (' + names('loan') + ')',
-      'Work-study (earned by working a job): ' + $(s.work),
+      'Work-study (wages from a campus job, never repaid, not a loan): ' + $(s.work),
       'Cash still needed after loans and work-study: ' + $(s.cashGap)
     ];
     if (s.claimedNet !== null) { nums.push(s.claimedNet); lines.push('The letter itself says the net cost is ' + $(s.claimedNet) + ', which subtracts loans.'); }
@@ -360,7 +416,8 @@
       return shrink(file).then(function (b) { return H().readPhoto(b); }).then(function (r) {
         el('letter').value = r.text;
         decode();
-        el('status').textContent = T.photoDone(r.source);
+        el('status').textContent = '';
+        el('resultsNote').textContent = T.photoDone(r.source);
       });
     }).catch(function (e) {
       console.warn(e);
@@ -392,7 +449,7 @@
   // ---------- wire up ----------
   el('decode').addEventListener('click', decode);
   el('clear').addEventListener('click', function () {
-    el('letter').value = ''; el('file').value = ''; el('results').hidden = true; el('status').textContent = '';
+    el('letter').value = ''; el('file').value = ''; el('status').textContent = '';
     if (window.speechSynthesis) speechSynthesis.cancel();
     el('letter').focus();
   });
@@ -410,6 +467,7 @@
     render();
   });
   el('extraCost').addEventListener('input', render);
+  el('again').addEventListener('click', showStart);
   el('speak').addEventListener('click', toggleSpeak);
   el('aiRun').addEventListener('click', runAI);
   el('explainRun').addEventListener('click', runExplain);

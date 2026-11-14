@@ -31,6 +31,7 @@
     });
     try { localStorage.setItem('ald-lang', l); } catch (e) {}
     if (!el('results').hidden) render();
+    if (typeof refreshEngine === 'function' && window.HybridAI) refreshEngine();
   }
 
   // ---------- input ----------
@@ -54,6 +55,7 @@
   }
 
   function readFile(file) {
+    if (file && /^image\//.test(file.type) && engine !== 'off') return readPhoto(file);
     if (!file) return;
     if (/\.pdf$/i.test(file.name) || file.type === 'application/pdf') {
       el('status').textContent = T.readingPdf;
@@ -149,8 +151,13 @@
     renderLines();
     el('questions').innerHTML = T.questions.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('');
 
-    var unsure = state.items.filter(function (i) { return i.cat === 'unknown' || (i.check && !i.ai); });
+    var unsure = state.items.filter(function (i) { return i.cat === 'unknown' || (i.check && !i.ai && !i.aiSrc); });
     el('aiBox').hidden = !unsure.length;
+    var gem = engine !== 'off';
+    el('explainBox').hidden = !gem;
+    var nano = engine === 'on-device';
+    el('aiBox').querySelector('[data-t="aiHelp"]').textContent = !gem ? T.aiHelp : nano ? T.aiHelpNano : T.aiHelpCloud;
+    el('aiRun').textContent = !gem ? T.aiButton : nano ? T.aiButtonNano : T.aiButtonCloud;
   }
 
   function list(id, cat, empty) {
@@ -164,7 +171,9 @@
     var cats = ['grant', 'loan', 'work', 'cost', 'summary', 'unknown', 'ignore'];
     el('lines').innerHTML = state.items.map(function (i) {
       var tags = (i.check && i.cat !== 'unknown' ? ' <span class="tag" title="' + esc(T.checkTip) + '">' + esc(T.checkTag) + '</span>' : '') +
-        (i.ai ? ' <span class="tag ai">' + esc(T.aiTag) + ' ' + Math.round(i.ai * 100) + '%</span>' : '');
+        (i.aiSrc ? ' <span class="tag ai">' + esc(i.aiSrc === 'cloud' ? T.aiTagCloud : T.aiTagNano) + '</span>' :
+          i.ai ? ' <span class="tag ai">' + esc(T.aiTag) + ' ' + Math.round(i.ai * 100) + '%</span>' : '') +
+        (i.why ? '<span class="d-why">' + esc(i.why) + '</span>' : '');
       return '<tr class="t-' + i.cat + '"><td>' + esc(i.label) + tags + '</td><td class="num">' + $(i.amount) + '</td><td>' +
         '<select data-id="' + i.id + '" aria-label="' + esc(T.colType + ': ' + i.label) + '">' +
         cats.map(function (c) { return '<option value="' + c + '"' + (c === i.cat ? ' selected' : '') + '>' + esc(T.cat[c]) + '</option>'; }).join('') +
@@ -239,8 +248,129 @@
       return best;
     });
   }
+  // ---------- Gemini through Firebase AI Logic (hybrid: Nano on device, cloud only with a yes) ----------
+  var engine = 'off';
+  function H() { return window.HybridAI; }
+  function refreshEngine() {
+    if (!H()) return Promise.resolve();
+    return H().status().then(function (st) {
+      engine = st;
+      var key = { 'on-device': 'engineDevice', downloadable: 'engineDownload', downloading: 'engineDownloading', 'cloud-only': 'engineCloud', off: 'engineOff' }[st];
+      el('engine').hidden = st === 'off';
+      el('engineText').textContent = T[key] || '';
+      el('engineGet').hidden = st !== 'downloadable';
+      el('photoRow').hidden = st === 'off';
+      if (!el('results').hidden) render();
+    });
+  }
+  // Resolves true when Nano is here, or when the person says yes to the cloud.
+  var askResolve = null;
+  function okToRun(askKey) {
+    if (engine === 'on-device') return Promise.resolve(true);
+    el('askText').textContent = T[askKey];
+    el('ask').hidden = false;
+    el('askYes').focus();
+    return new Promise(function (res) { askResolve = res; });
+  }
+  function answer(yes) {
+    el('ask').hidden = true;
+    if (askResolve) { var r = askResolve; askResolve = null; r(yes); }
+  }
+
+  function runGemini(targets) {
+    el('aiRun').disabled = true;
+    return okToRun('cloudAskLines').then(function (ok) {
+      if (!ok) { el('aiStatus').textContent = T.cloudDeclined; return; }
+      el('aiStatus').textContent = T.aiThinking;
+      return H().sortLines(targets.map(function (i) { return i.label; }), lang).then(function (r) {
+        var n = 0;
+        targets.forEach(function (item, k) {
+          var got = r.items[k];
+          if (!got) return;
+          item.cat = got.cat; item.why = got.why; item.aiSrc = r.source; item.check = false; n++;
+        });
+        el('aiStatus').textContent = T.aiDoneNano(n, r.source);
+        render();
+      });
+    }).catch(function (e) {
+      console.warn(e);
+      el('aiStatus').textContent = T.aiFail;
+    }).then(function () { el('aiRun').disabled = false; });
+  }
+
+  function facts() {
+    var s = state.summary, nums = [s.cost, s.grants, s.loans, s.work, s.net, s.cashGap];
+    function names(cat) { return state.items.filter(function (i) { return i.cat === cat; }).map(function (i) { nums.push(i.amount); return i.label + ' ' + $(i.amount); }).join('; ') || 'none'; }
+    var lines = [
+      'REAL PRICE for one year (full cost minus gifts only): ' + $(s.net),
+      'Full cost for one year before any aid: ' + (s.cost ? $(s.cost) : 'not listed in the letter'),
+      'Gifts (never repaid): ' + $(s.grants) + ' (' + names('grant') + ')',
+      'Loans (must be repaid): ' + $(s.loans) + ' (' + names('loan') + ')',
+      'Work-study (earned by working a job): ' + $(s.work),
+      'Cash still needed after loans and work-study: ' + $(s.cashGap)
+    ];
+    if (s.claimedNet !== null) { nums.push(s.claimedNet); lines.push('The letter itself says the net cost is ' + $(s.claimedNet) + ', which subtracts loans.'); }
+    if (s.parentPayback.yearly) { nums.push(s.parentPayback.yearly, s.parentPayback.monthly); lines.push('Parent PLUS loans of ' + $(s.parentPayback.yearly) + ' a year are repaid by the parent, about ' + $(s.parentPayback.monthly) + ' a month over 10 years for four years of them.'); }
+    if (s.studentPayback.yearly) { nums.push(s.studentPayback.yearly, s.studentPayback.monthly); lines.push('Student loans of ' + $(s.studentPayback.yearly) + ' a year are repaid by the student, about ' + $(s.studentPayback.monthly) + ' a month over 10 years for four years of them.'); }
+    s.flags.forEach(function (f) { var v = window.I18N.en.flags[f.key]; if (v) lines.push('Warning: ' + (typeof v === 'function' ? v(f) : v)); if (f.loans) nums.push(f.loans, f.left, f.extra); if (f.claimed) nums.push(f.claimed, f.real); });
+    return { lines: lines, price: s.net, numbers: nums.filter(function (n) { return typeof n === 'number'; }) };
+  }
+  function runExplain() {
+    el('explainRun').disabled = true;
+    okToRun('cloudAskTotals').then(function (ok) {
+      if (!ok) { el('explainStatus').textContent = T.cloudDeclined; return; }
+      el('explainStatus').textContent = T.aiThinking;
+      return H().explain(facts(), lang).then(function (r) {
+        el('explainStatus').textContent = '';
+        var paras = r.text.split(/\n+/).filter(Boolean).map(function (t) { return '<p>' + esc(t) + '</p>'; }).join('');
+        var check = !r.numbersOk ? '<p class="warn">' + esc(T.explainBad(r.badNumbers.map(function (n) { return $(+n); }))) + '</p>'
+          : !r.priceOk ? '<p class="warn">' + esc(T.explainPrice($(state.summary.net))) + '</p>'
+          : '<p class="fine">' + esc(T.explainOk) + '</p>';
+        el('explainOut').innerHTML = paras + check + '<p class="fine">' + esc(T.madeOn(r.source)) + '</p>';
+        el('explainOut').hidden = false;
+      });
+    }).catch(function (e) {
+      console.warn(e);
+      el('explainStatus').textContent = T.aiFail;
+    }).then(function () { el('explainRun').disabled = false; });
+  }
+
+  // Shrink the photo so it fits the on-device model's input budget.
+  function shrink(file) {
+    return new Promise(function (res, rej) {
+      var img = new Image();
+      img.onload = function () {
+        var k = Math.min(1, 1400 / Math.max(img.width, img.height));
+        var c = document.createElement('canvas');
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(img.src);
+        c.toBlob(function (b) { b ? res(b) : rej(new Error('blob')); }, 'image/jpeg', 0.9);
+      };
+      img.onerror = rej;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+  function readPhoto(file) {
+    if (!file) return;
+    if (!/^image\/(jpeg|png)$/.test(file.type)) { el('status').textContent = T.photoType; return; }
+    okToRun('cloudAskPhoto').then(function (ok) {
+      if (!ok) { el('status').textContent = T.cloudDeclined; return; }
+      el('status').textContent = T.photoReading;
+      return shrink(file).then(function (b) { return H().readPhoto(b); }).then(function (r) {
+        el('letter').value = r.text;
+        decode();
+        el('status').textContent = T.photoDone(r.source);
+      });
+    }).catch(function (e) {
+      console.warn(e);
+      el('status').textContent = T.photoFail;
+    }).then(function () { el('photo').value = ''; });
+  }
+
   function runAI() {
-    var targets = state.items.filter(function (i) { return i.cat === 'unknown' || (i.check && !i.ai); });
+    var targets = state.items.filter(function (i) { return i.cat === 'unknown' || (i.check && !i.ai && !i.aiSrc); });
+    if (targets.length && engine !== 'off') return runGemini(targets);
     if (!targets.length) return;
     el('aiRun').disabled = true;
     el('aiStatus').textContent = T.aiLoading;
@@ -276,12 +406,28 @@
   });
   el('lines').addEventListener('change', function (e) {
     var id = e.target.getAttribute('data-id');
-    state.items.forEach(function (i) { if (i.id === id) { i.cat = e.target.value; i.check = false; i.ai = 0; } });
+    state.items.forEach(function (i) { if (i.id === id) { i.cat = e.target.value; i.check = false; i.ai = 0; i.aiSrc = null; i.why = ''; } });
     render();
   });
   el('extraCost').addEventListener('input', render);
   el('speak').addEventListener('click', toggleSpeak);
   el('aiRun').addEventListener('click', runAI);
+  el('explainRun').addEventListener('click', runExplain);
+  el('askYes').addEventListener('click', function () { answer(true); });
+  el('askNo').addEventListener('click', function () { answer(false); });
+  el('photo').addEventListener('change', function (e) { readPhoto(e.target.files[0]); });
+  el('photoSample').addEventListener('click', function () {
+    fetch('samples/lakeshore-photo.jpg').then(function (r) { return r.blob(); }).then(function (b) {
+      readPhoto(new File([b], 'lakeshore-photo.jpg', { type: 'image/jpeg' }));
+    });
+  });
+  el('engineGet').addEventListener('click', function () {
+    el('engineGet').hidden = true;
+    H().download(function (v) { el('engineText').textContent = T.engineProgress(Math.round(v * 100)); })
+      .then(refreshEngine)
+      .catch(function (e) { console.warn(e); refreshEngine(); });
+  });
+  if (window.HybridAI) refreshEngine(); else window.addEventListener('hybridai-ready', refreshEngine);
 
   // Drag a file anywhere onto the letter box.
   el('letter').addEventListener('dragover', function (e) { e.preventDefault(); });

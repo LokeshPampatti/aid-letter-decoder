@@ -50,6 +50,27 @@
             <span class="d-hint" id="fileHint" data-t="uploadHint">PDF files are read on your device.</span>
           </div>
 
+          <div class="d-row" id="photoRow" hidden>
+            <label class="d-file c-btn c-btn-sm c-btn-line">
+              <input type="file" id="photo" accept="image/jpeg,image/png" capture="environment">
+              <span data-t="photoLabel">Use a photo of a paper letter</span>
+            </label>
+            <button type="button" class="d-chip" id="photoSample" data-t="photoSample">Try a sample photo</button>
+          </div>
+
+          <div class="d-engine" id="engine" hidden>
+            <span class="d-dot" aria-hidden="true"></span>
+            <span id="engineText"></span>
+            <button type="button" class="d-textbtn" id="engineGet" hidden data-t="engineGet">Download Gemini Nano</button>
+          </div>
+          <div class="d-ask" id="ask" hidden role="alertdialog" aria-labelledby="askText">
+            <p id="askText"></p>
+            <div class="d-actions">
+              <button type="button" class="c-btn c-btn-sm c-btn-ink" id="askYes" data-t="cloudYes">Yes, use the cloud</button>
+              <button type="button" class="d-textbtn" id="askNo" data-t="cloudNo">No thanks</button>
+            </div>
+          </div>
+
           <div class="d-samples">
             <span data-t="samplesLabel">No letter handy? Try a sample:</span>
             <button type="button" class="d-chip" data-sample="northgate">Northgate University</button>
@@ -103,6 +124,16 @@
             <div class="d-payback" id="payback"></div>
           </div>
 
+          <div class="d-block" id="explainBox" hidden>
+            <div class="d-tile">
+              <h3 data-t="explainTitle">In plain words</h3>
+              <p data-t="explainHelp"></p>
+              <button type="button" class="c-btn c-btn-sm c-btn-ink" id="explainRun" data-t="explainButton">Explain my letter</button>
+              <p class="d-status" id="explainStatus" role="status" aria-live="polite"></p>
+              <div class="d-explain" id="explainOut" hidden></div>
+            </div>
+          </div>
+
           <div class="d-block" id="aiBox" hidden>
             <div class="d-tile">
               <h3 data-t="aiTitle">Not sure about some lines?</h3>
@@ -147,5 +178,7 @@
   <script src="samples.js"></script>
   <script src="i18n.js"></script>
   <script src="app.js"></script>
+  <script src="firebase-config.js"></script>
+  <script type="module" src="hybrid.js"></script>
 </body>
 </html>

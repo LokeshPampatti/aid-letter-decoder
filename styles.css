@@ -268,3 +268,17 @@
   .d-stage { background: none; box-shadow: none; padding: 0; }
   .d-card { box-shadow: none; }
 }
+
+/* ---------- hybrid AI (Gemini Nano through Firebase AI Logic) ---------- */
+.d-engine { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; font-size: 13.5px; color: var(--muted); }
+.d-engine .d-textbtn { font-size: 13.5px; }
+.d-ask { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; border-radius: 16px; border: 1px solid var(--line-2); background: var(--bg); }
+.d-ask p { margin: 0; font-size: 15px; color: var(--ink); }
+.d-explain { display: flex; flex-direction: column; gap: 8px; }
+.d-explain p { margin: 0; font-size: 16px; line-height: 1.55; color: var(--ink); }
+.d-explain .fine { font-size: 13px; color: var(--dim); }
+.d-explain .warn { font-size: 14px; color: var(--lava-text); font-weight: 600; }
+.d-why { display: block; margin-top: 4px; font-size: 13px; color: var(--dim); }
+
+/* hidden must win over the display rules above */
+.d-engine[hidden], .d-ask[hidden], .d-tile[hidden], #photoRow[hidden] { display: none !important; }
